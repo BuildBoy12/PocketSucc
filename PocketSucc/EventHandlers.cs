@@ -1,5 +1,6 @@
 namespace PocketSucc
 {
+    using Exiled.API.Extensions;
     using Exiled.Events.EventArgs;
     using MEC;
     using UnityEngine;
@@ -9,7 +10,7 @@ namespace PocketSucc
     /// </summary>
     public static class EventHandlers
     {
-        private static Vector3 LastPortalPosition => Methods.Scp106Portal != null ? Methods.Scp106Portal.transform.position + (Vector3.up * 4) : Exiled.API.Extensions.Role.GetRandomSpawnPoint(RoleType.FacilityGuard);
+        private static Vector3 LastPortalPosition => Methods.Scp106Portal != null ? Methods.Scp106Portal.transform.position + (Vector3.up * 4) : RoleType.FacilityGuard.GetRandomSpawnProperties().Item1;
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Scp106.OnCreatingPortal(CreatingPortalEventArgs)"/>
         public static void OnCreatingPortal(CreatingPortalEventArgs ev)
@@ -60,7 +61,7 @@ namespace PocketSucc
         /// <inheritdoc cref="Exiled.Events.Handlers.Scp106.OnTeleporting(TeleportingEventArgs)"/>
         public static void OnTeleporting(TeleportingEventArgs ev)
         {
-            if (ev.PortalPosition == Vector3.zero)
+            if (Methods.Scp106Portal.transform.position == Vector3.zero)
                 ev.IsAllowed = false;
         }
     }

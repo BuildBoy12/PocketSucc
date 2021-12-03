@@ -5,7 +5,10 @@ namespace PocketSucc
     using CustomPlayerEffects;
     using Exiled.API.Enums;
     using Exiled.API.Features;
+    using Exiled.API.Features.Items;
+    using InventorySystem.Items.ThrowableProjectiles;
     using MEC;
+    using PlayerStatsSystem;
     using UnityEngine;
     using Object = UnityEngine.Object;
 
@@ -15,7 +18,7 @@ namespace PocketSucc
         /// Gets or sets the amount of succed players the current portal has.
         /// </summary>
         public static int CurrentSuccs { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the <see cref="CoroutineHandle"/> to hold <see cref="CheckPositions"/>.
         /// </summary>
@@ -55,7 +58,7 @@ namespace PocketSucc
                 yield return Timing.WaitForSeconds(Config.RefreshRate);
                 if (Warhead.IsDetonated && !Config.TrapAfterWarhead)
                     yield break;
-                
+
                 if (Scp106Portal != null)
                 {
                     if (!IsPortalActivated)
@@ -91,12 +94,12 @@ namespace PocketSucc
 
         private static void CheckGrenades()
         {
-            foreach (Grenade grenade in Object.FindObjectsOfType<Grenade>())
+            foreach (var grenade in Object.FindObjectsOfType<EffectGrenade>())
             {
                 if (ImmuneObjects.Contains(grenade.gameObject)
-                    || (grenade is FragGrenade && Config.BlacklistedGrenades.Contains(GrenadeType.FragGrenade))
-                    || (grenade is FlashGrenade && Config.BlacklistedGrenades.Contains(GrenadeType.Flashbang))
-                    || (grenade is Scp018Grenade && Config.BlacklistedGrenades.Contains(GrenadeType.Scp018)))
+                    || (grenade is ExplosionGrenade && Config.BlacklistedGrenades.Contains(GrenadeType.FragGrenade))
+                    || (grenade is FlashbangGrenade && Config.BlacklistedGrenades.Contains(GrenadeType.Flashbang))
+                    || (grenade is Scp018Projectile && Config.BlacklistedGrenades.Contains(GrenadeType.Scp018)))
                     continue;
 
                 Vector3 grenadePos = grenade.transform.position;
@@ -118,29 +121,29 @@ namespace PocketSucc
 
         private static void CheckItems()
         {
-            foreach (Pickup pickup in Pickup.Instances)
+            foreach (Pickup pickup in Map.Pickups)
             {
-                if (pickup == null || !pickup.gameObject || ImmuneObjects.Contains(pickup.gameObject))
+                if (pickup == null || !pickup.Base.gameObject || ImmuneObjects.Contains(pickup.Base.gameObject))
                     continue;
-                
-                if (Config.BlacklistedItems != null && Config.BlacklistedItems.Contains(pickup.itemId))
+
+                if (Config.BlacklistedItems != null && Config.BlacklistedItems.Contains(pickup.Type))
                     continue;
 
                 try
                 {
-                    Vector3 pickupPos = pickup.transform.position;
+                    Vector3 pickupPos = pickup.Position;
                     Vector3 portalPos = Scp106Portal.transform.position;
 
                     if (Math.Abs(pickupPos.x - portalPos.x) <= Config.ItemRange
                         && Math.Abs(pickupPos.y - portalPos.y) <= Config.ItemVerticalRange
                         && Math.Abs(pickupPos.z - portalPos.z) <= Config.ItemRange)
                     {
-                        Timing.RunCoroutine(PortalAnimation(pickup.gameObject));
+                        Timing.RunCoroutine(PortalAnimation(pickup.Base.gameObject));
                     }
 
                     if (Vector3.Distance(pickupPos, PdExit) <= Config.ItemRange)
                     {
-                        ReverseAnimation(pickup.gameObject);
+                        ReverseAnimation(pickup.Base.gameObject);
                     }
                 }
                 catch (Exception e)
@@ -176,8 +179,8 @@ namespace PocketSucc
 
         private static IEnumerator<float> PortalAnimation(Player player)
         {
-            Scp106PlayerScript scp106PlayerScript = player.GameObject.GetComponent<Scp106PlayerScript>();
-            
+            Scp106PlayerScript scp106PlayerScript = player.ReferenceHub.scp106PlayerScript;
+
             if (scp106PlayerScript.goingViaThePortal)
                 yield break;
 
@@ -185,33 +188,33 @@ namespace PocketSucc
 
             bool inGodMode = player.IsGodModeEnabled;
             player.IsGodModeEnabled = true;
-            player.ReferenceHub.fpc.NetworkforceStopInputs = true;
-            for (int i = 0; i < 50; i++)
+            player.CanSendInputs = false;
+
+            Vector3 startPosition = player.Position, endPosition = player.Position -= Vector3.up * 2;
+            for (int i = 0; i < 30; i++)
             {
-                var pos = player.Position;
-                pos.y -= i * 0.01f;
-                player.Position = pos;
+                player.Position = Vector3.Lerp(startPosition, endPosition, i / 30f);
                 yield return 0f;
             }
 
             player.Position = PdEnter;
             player.IsGodModeEnabled = inGodMode;
-            player.ReferenceHub.fpc.NetworkforceStopInputs = false;
+            player.CanSendInputs = true;
             if (++CurrentSuccs >= Config.MaximumTeleports)
             {
-                scp106PlayerScript.DeletePortal();
+                scp106PlayerScript.NetworkportalPosition = Vector3.zero;
             }
-            
+
             WaitCoroutine = Timing.RunCoroutine(WaitForPortalActivated(Config.GlobalCooldown));
             if (Warhead.IsDetonated)
             {
-                player.Kill(DamageTypes.Pocket);
+                player.Kill(DeathTranslations.PocketDecay.LogLabel);
                 yield break;
             }
-            
+
             if (!player.IsScpOr035())
             {
-                player.Hurt(Config.Damage, DamageTypes.Pocket);
+                player.Hurt(DeathTranslations.PocketDecay.LogLabel, Config.Damage);
                 player.EnableEffect<Corroding>();
             }
 
@@ -224,12 +227,12 @@ namespace PocketSucc
             if (ImmuneObjects.Contains(gameObject))
                 yield break;
 
-            bool isGrenade = gameObject.TryGetComponent(out Grenade grenade);
+            bool isGrenade = gameObject.TryGetComponent(out EffectGrenade grenade);
             Vector3 velocity = Vector3.zero;
             if (isGrenade)
             {
-                velocity = grenade.rb.velocity;
-                grenade.rb.velocity = Vector3.zero;
+                velocity = grenade.Rb.velocity;
+                grenade.Rb.velocity = Vector3.zero;
             }
 
             while (gameObject.transform.position.y > Scp106Portal.transform.position.y)
@@ -243,7 +246,7 @@ namespace PocketSucc
             gameObject.transform.position = PdEnter;
             if (isGrenade)
             {
-                grenade.rb.velocity = velocity;
+                grenade.Rb.velocity = velocity;
             }
         }
     }
