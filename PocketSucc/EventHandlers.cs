@@ -42,6 +42,9 @@ namespace PocketSucc
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnHurting(HurtingEventArgs)"/>
         public static void OnHurting(HurtingEventArgs ev)
         {
+            if (ev.Attacker == null)
+                return;
+            
             if (ev.Attacker.IsScpOr035() 
                 && ev.Attacker.IsInPocketDimension 
                 && !Plugin.Instance.Config.ScpsDamageInPocket)
