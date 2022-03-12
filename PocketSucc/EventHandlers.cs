@@ -1,3 +1,10 @@
+// -----------------------------------------------------------------------
+// <copyright file="EventHandlers.cs" company="Build">
+// Copyright (c) Build. All rights reserved.
+// Licensed under the CC BY-SA 3.0 license.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace PocketSucc
 {
     using Exiled.API.Extensions;
@@ -31,7 +38,7 @@ namespace PocketSucc
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnEscapingPocketDimension(EscapingPocketDimensionEventArgs)"/>
         public void OnEscapingPocketDimension(EscapingPocketDimensionEventArgs ev)
         {
-            if (ev.Player.IsScpOr035())
+            if (ev.Player.IsScp)
             {
                 ev.TeleportPosition = LastPortalPosition;
             }
@@ -40,7 +47,7 @@ namespace PocketSucc
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs)"/>
         public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
         {
-            if (ev.Player.IsScpOr035())
+            if (ev.Player.IsScp)
             {
                 ev.IsAllowed = false;
                 ev.Player.Position = LastPortalPosition;
@@ -53,7 +60,7 @@ namespace PocketSucc
             if (ev.Attacker == null)
                 return;
 
-            if (ev.Attacker.IsScpOr035()
+            if (ev.Attacker.IsScp
                 && ev.Attacker.IsInPocketDimension
                 && !plugin.Config.ScpsDamageInPocket)
             {

@@ -1,3 +1,10 @@
+// -----------------------------------------------------------------------
+// <copyright file="Methods.cs" company="Build">
+// Copyright (c) Build. All rights reserved.
+// Licensed under the CC BY-SA 3.0 license.
+// </copyright>
+// -----------------------------------------------------------------------
+
 namespace PocketSucc
 {
     using System;
@@ -12,6 +19,9 @@ namespace PocketSucc
     using UnityEngine;
     using Object = UnityEngine.Object;
 
+    /// <summary>
+    /// Various methods to control succing into the pocket.
+    /// </summary>
     public static class Methods
     {
         /// <summary>
@@ -160,7 +170,7 @@ namespace PocketSucc
                 if (player == null
                     || string.IsNullOrEmpty(player.UserId)
                     || !player.IsAlive
-                    || (Config.BlacklistedRoles.Contains(player.Role) && !player.Is035()))
+                    || Config.BlacklistedRoles.Contains(player.Role))
                     continue;
 
                 if (Vector3.Distance(player.Position, Scp106Portal.transform.position) <= Config.PlayerRange)
@@ -212,9 +222,9 @@ namespace PocketSucc
                 yield break;
             }
 
-            if (!player.IsScpOr035())
+            if (!player.IsScp)
             {
-                player.Hurt(DeathTranslations.PocketDecay.LogLabel, Config.Damage);
+                player.Hurt(Config.Damage, DamageType.PocketDimension);
                 player.EnableEffect<Corroding>();
             }
 

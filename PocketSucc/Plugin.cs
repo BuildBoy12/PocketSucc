@@ -1,4 +1,11 @@
-﻿namespace PocketSucc
+﻿// -----------------------------------------------------------------------
+// <copyright file="Plugin.cs" company="Build">
+// Copyright (c) Build. All rights reserved.
+// Licensed under the CC BY-SA 3.0 license.
+// </copyright>
+// -----------------------------------------------------------------------
+
+namespace PocketSucc
 {
     using System;
     using Exiled.API.Features;
@@ -21,13 +28,13 @@
         public static Plugin Instance { get; private set; }
 
         /// <inheritdoc/>
-        public override string Author { get; } = "Build";
+        public override string Author => "Build";
 
         /// <inheritdoc/>
-        public override Version RequiredExiledVersion { get; } = new Version(4, 2, 2);
+        public override Version RequiredExiledVersion { get; } = new Version(5, 0, 0);
 
         /// <inheritdoc/>
-        public override Version Version { get; } = new Version(2, 0, 0);
+        public override Version Version { get; } = new Version(1, 0, 0);
 
         /// <inheritdoc/>
         public override void OnEnabled()
@@ -59,7 +66,7 @@
             Scp106Handlers.Teleporting -= eventHandlers.OnTeleporting;
             eventHandlers = null;
 
-            harmony.UnpatchAll();
+            harmony.UnpatchAll(harmony.Id);
             harmony = null;
 
             Instance = null;
