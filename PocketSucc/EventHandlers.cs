@@ -8,12 +8,20 @@ namespace PocketSucc
     /// <summary>
     /// Where all EXILED events are handled.
     /// </summary>
-    public static class EventHandlers
+    public class EventHandlers
     {
+        private readonly Plugin plugin;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="EventHandlers"/> class.
+        /// </summary>
+        /// <param name="plugin">An instance of the <see cref="Plugin"/> class.</param>
+        public EventHandlers(Plugin plugin) => this.plugin = plugin;
+
         private static Vector3 LastPortalPosition => Methods.Scp106Portal != null ? Methods.Scp106Portal.transform.position + (Vector3.up * 4) : RoleType.FacilityGuard.GetRandomSpawnProperties().Item1;
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Scp106.OnCreatingPortal(CreatingPortalEventArgs)"/>
-        public static void OnCreatingPortal(CreatingPortalEventArgs ev)
+        public void OnCreatingPortal(CreatingPortalEventArgs ev)
         {
             Methods.CurrentSuccs = 0;
             Timing.KillCoroutines(Methods.WaitCoroutine);
@@ -21,7 +29,7 @@ namespace PocketSucc
         }
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnEscapingPocketDimension(EscapingPocketDimensionEventArgs)"/>
-        public static void OnEscapingPocketDimension(EscapingPocketDimensionEventArgs ev)
+        public void OnEscapingPocketDimension(EscapingPocketDimensionEventArgs ev)
         {
             if (ev.Player.IsScpOr035())
             {
@@ -30,7 +38,7 @@ namespace PocketSucc
         }
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs)"/>
-        public static void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
+        public void OnFailingEscapePocketDimension(FailingEscapePocketDimensionEventArgs ev)
         {
             if (ev.Player.IsScpOr035())
             {
@@ -40,21 +48,21 @@ namespace PocketSucc
         }
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Player.OnHurting(HurtingEventArgs)"/>
-        public static void OnHurting(HurtingEventArgs ev)
+        public void OnHurting(HurtingEventArgs ev)
         {
             if (ev.Attacker == null)
                 return;
-            
-            if (ev.Attacker.IsScpOr035() 
-                && ev.Attacker.IsInPocketDimension 
-                && !Plugin.Instance.Config.ScpsDamageInPocket)
+
+            if (ev.Attacker.IsScpOr035()
+                && ev.Attacker.IsInPocketDimension
+                && !plugin.Config.ScpsDamageInPocket)
             {
                 ev.IsAllowed = false;
             }
         }
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Server.OnRoundStarted()"/>
-        public static void OnRoundStarted()
+        public void OnRoundStarted()
         {
             Methods.ImmuneObjects.Clear();
             Timing.KillCoroutines(Methods.PositionCoroutine);
@@ -62,7 +70,7 @@ namespace PocketSucc
         }
 
         /// <inheritdoc cref="Exiled.Events.Handlers.Scp106.OnTeleporting(TeleportingEventArgs)"/>
-        public static void OnTeleporting(TeleportingEventArgs ev)
+        public void OnTeleporting(TeleportingEventArgs ev)
         {
             if (Methods.Scp106Portal.transform.position == Vector3.zero)
                 ev.IsAllowed = false;

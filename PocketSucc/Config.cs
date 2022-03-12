@@ -118,11 +118,11 @@ namespace PocketSucc
         /// Gets or sets which roles cannot be sent to the pocket dimension.
         /// </summary>
         [Description("Which roles cannot be sent to the pocket dimension.")]
-        public List<string> BlacklistedRoles { get; set; } = new List<string>
+        public List<RoleType> BlacklistedRoles { get; set; } = new List<RoleType>
         {
-            RoleType.Scp106.ToString(),
-            RoleType.Scp079.ToString(),
-            "Scp035",
+            RoleType.Scp106,
+            RoleType.Scp079,
+            RoleType.Spectator,
         };
 
         /// <summary>

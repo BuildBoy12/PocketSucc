@@ -12,7 +12,8 @@
     /// </summary>
     public class Plugin : Plugin<Config>
     {
-        private static Harmony harmony;
+        private Harmony harmony;
+        private EventHandlers eventHandlers;
 
         /// <summary>
         /// Gets a static instance of the <see cref="Plugin"/> class.
@@ -23,22 +24,23 @@
         public override string Author { get; } = "Build";
 
         /// <inheritdoc/>
-        public override Version RequiredExiledVersion { get; } = new Version(3, 7, 2);
+        public override Version RequiredExiledVersion { get; } = new Version(4, 2, 2);
 
         /// <inheritdoc/>
-        public override Version Version { get; } = new Version(1, 0, 0);
+        public override Version Version { get; } = new Version(2, 0, 0);
 
         /// <inheritdoc/>
         public override void OnEnabled()
         {
             Instance = this;
 
-            Scp106Handlers.CreatingPortal += EventHandlers.OnCreatingPortal;
-            PlayerHandlers.EscapingPocketDimension += EventHandlers.OnEscapingPocketDimension;
-            PlayerHandlers.FailingEscapePocketDimension += EventHandlers.OnFailingEscapePocketDimension;
-            PlayerHandlers.Hurting += EventHandlers.OnHurting;
-            ServerHandlers.RoundStarted += EventHandlers.OnRoundStarted;
-            Scp106Handlers.Teleporting += EventHandlers.OnTeleporting;
+            eventHandlers = new EventHandlers(this);
+            Scp106Handlers.CreatingPortal += eventHandlers.OnCreatingPortal;
+            PlayerHandlers.EscapingPocketDimension += eventHandlers.OnEscapingPocketDimension;
+            PlayerHandlers.FailingEscapePocketDimension += eventHandlers.OnFailingEscapePocketDimension;
+            PlayerHandlers.Hurting += eventHandlers.OnHurting;
+            ServerHandlers.RoundStarted += eventHandlers.OnRoundStarted;
+            Scp106Handlers.Teleporting += eventHandlers.OnTeleporting;
 
             harmony = new Harmony($"pocketsucc.{DateTime.UtcNow.Ticks}");
             harmony.PatchAll();
@@ -49,12 +51,13 @@
         /// <inheritdoc/>
         public override void OnDisabled()
         {
-            Scp106Handlers.CreatingPortal -= EventHandlers.OnCreatingPortal;
-            PlayerHandlers.EscapingPocketDimension -= EventHandlers.OnEscapingPocketDimension;
-            PlayerHandlers.FailingEscapePocketDimension -= EventHandlers.OnFailingEscapePocketDimension;
-            PlayerHandlers.Hurting -= EventHandlers.OnHurting;
-            ServerHandlers.RoundStarted -= EventHandlers.OnRoundStarted;
-            Scp106Handlers.Teleporting -= EventHandlers.OnTeleporting;
+            Scp106Handlers.CreatingPortal -= eventHandlers.OnCreatingPortal;
+            PlayerHandlers.EscapingPocketDimension -= eventHandlers.OnEscapingPocketDimension;
+            PlayerHandlers.FailingEscapePocketDimension -= eventHandlers.OnFailingEscapePocketDimension;
+            PlayerHandlers.Hurting -= eventHandlers.OnHurting;
+            ServerHandlers.RoundStarted -= eventHandlers.OnRoundStarted;
+            Scp106Handlers.Teleporting -= eventHandlers.OnTeleporting;
+            eventHandlers = null;
 
             harmony.UnpatchAll();
             harmony = null;

@@ -160,8 +160,7 @@ namespace PocketSucc
                 if (player == null
                     || string.IsNullOrEmpty(player.UserId)
                     || !player.IsAlive
-                    || (Config.BlacklistedRoles.Contains(player.Role.ToString(), StringComparison.OrdinalIgnoreCase) && !player.Is035())
-                    || (Config.BlacklistedRoles.Contains("Scp035", StringComparison.OrdinalIgnoreCase) && player.Is035()))
+                    || (Config.BlacklistedRoles.Contains(player.Role) && !player.Is035()))
                     continue;
 
                 if (Vector3.Distance(player.Position, Scp106Portal.transform.position) <= Config.PlayerRange)
@@ -190,6 +189,7 @@ namespace PocketSucc
             player.IsGodModeEnabled = true;
             player.CanSendInputs = false;
 
+            player.ReferenceHub.scp106PlayerScript.GrabbedPosition = player.Position + (Vector3.up * 1.5f);
             Vector3 startPosition = player.Position, endPosition = player.Position -= Vector3.up * 2;
             for (int i = 0; i < 30; i++)
             {
